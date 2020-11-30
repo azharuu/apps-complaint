@@ -1,7 +1,5 @@
-package com.example.portalpengaduan;
-
+package com.poldakalbar.ecomplaintfix;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -25,9 +23,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 
-
 public class MainActivity extends AppCompatActivity {
-
 
     private WebView myWebView;
     private ValueCallback<Uri> mUploadMessage;
@@ -39,14 +35,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-
     private Uri mCapturedImageURI = null;
 
     // the same for Android 5.0 methods only
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
     private ProgressDialog progressBar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        myWebView.loadUrl("https://formfacade.com/sm/hwlczU7VK");
+        myWebView.loadUrl("https://e-complaint.herokuapp.com/");
         webSettings.setJavaScriptEnabled(true);
         webSettings.setSupportZoom(false);
         webSettings.setDomStorageEnabled(true);
-        myWebView.setWebViewClient(new WebViewClient());
+        myWebView.setWebViewClient(new myWebClient());
         myWebView.setWebChromeClient(new WebChromeClient() {
 
             // for Lollipop, all in one
@@ -176,11 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 openFileChooser(uploadMsg, acceptType);
             }
 
-
-
         });
-
-
 
     }
 
@@ -190,21 +180,25 @@ public class MainActivity extends AppCompatActivity {
             super.onPageStarted(view, url, favicon);
         }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if(url.startsWith("whatsapp:") || url.startsWith("whatsapp://send?") || url.startsWith("https://wa.me/")
-                || url.startsWith("whatsapp://")) {
-
-                    view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-//                    Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    intent.setData(Uri.parse(url));
-//                    startActivity(intent);
-                    return true;
-                } else {
-                    view.loadUrl(url);
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if(url.startsWith("whatsapp:") || url.startsWith("whatsapp://send?") || url.startsWith("https://wa.me/")
+                    || url.startsWith("whatsapp://")) {
+                //view.stopLoading();
+                try {
+                    Intent whatsappIntent = new Intent(Intent.ACTION_VIEW);
+                    whatsappIntent.setType("text/plain");
+                    whatsappIntent.setPackage("com.whatsapp");
+                    whatsappIntent.setData(Uri.parse(url));
+                    startActivity(whatsappIntent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    String MakeShortText = "Whatsapp have not been installed";
+                    Toast.makeText(MainActivity.this, MakeShortText, Toast.LENGTH_SHORT).show();
                 }
-                return false;
             }
+
+            return false;
+        }
     }
 
     @Override
@@ -215,29 +209,6 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-//        super.onActivityResult(requestCode, resultCode, intent);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            if (requestCode == REQUEST_SELECT_FILE) {
-//                if (uploadMessage == null)
-//                    return;
-//                uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
-//                uploadMessage = null;
-//            }
-//        } else if (requestCode == FILECHOOSER_RESULTCODE) {
-//            if (null == mUploadMessage)
-//                return;
-//            // Use MainActivity.RESULT_OK if you're implementing WebView inside Fragment
-//            // Use RESULT_OK only if you're implementing WebView inside an Activity
-//            Uri result = intent == null || resultCode != MainActivity.RESULT_OK ? null : intent.getData();
-//            mUploadMessage.onReceiveValue(result);
-//            mUploadMessage = null;
-//        } else
-//            Toast.makeText(MainActivity.this.getApplicationContext(), "Failed to Upload Image", Toast.LENGTH_LONG).show();
-//    }
-
 
     // return here when file selected from camera or from SD Card
     @Override
